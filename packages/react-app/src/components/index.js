@@ -1,22 +1,26 @@
 import styled from "styled-components";
 
+export const Container = styled.div`
+  margin:1em;
+`
+
 export const Header = styled.header`
   background-color: #282c34;
   min-height: 70px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
   color: white;
+  font-size: 25px;
 `;
 
 export const Body = styled.body`
   align-items: center;
-  background-color: #282c34;
-  color: white;
+  // background-color: #282c34;
+  // color: white;
   display: flex;
   flex-direction: column;
-  font-size: calc(10px + 2vmin);
+  // font-size: calc(10px + 2vmin);
   justify-content: center;
   min-height: calc(100vh - 70px);
 `;
@@ -52,3 +56,40 @@ export const Button = styled.button`
     outline: none;
   }
 `;
+
+export const Slider = styled.input`
+  -webkit-appearance: none;
+  width: 60%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+`
+
+export const SlideContainer = styled.p`
+  width: 80%;
+  margin-left: 5em;
+  text-align: center;
+`

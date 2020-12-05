@@ -15,10 +15,10 @@
     ]
   },
   "dependencies": {
-    "@project/contracts": "^1.0.0",
     "@apollo/react-hooks": "^3.1.5",
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.12",
+    "@project/contracts": "^1.0.0",
     "@testing-library/dom": "^6.16.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
@@ -33,9 +33,13 @@
     "eslint-plugin-flowtype": "^4.6.0",
     "graphql": "^14.7.0",
     "ipfs-http-client": "^45.0.0",
+    "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-scripts": "3.4.3",
+    "react-select": "^3.1.1",
+    "recharts": "^1.8.5",
     "styled-components": "^5.2.0",
     "web3modal": "^1.9.1"
   },
@@ -47,6 +51,7 @@
     "eject": "react-scripts eject",
     "ipfs": "yarn build && node scripts/ipfs.js",
     "start": "react-scripts start",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "deploy:dev": "surge build dpi-arb-graph.surge.sh"
   }
 }
