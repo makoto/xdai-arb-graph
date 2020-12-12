@@ -40,7 +40,7 @@ export const Link = styled.a.attrs({
 `;
 
 export const Button = styled.button`
-  background-color: white;
+  background-color: green;
   border: none;
   border-radius: 8px;
   color: #282c34;
@@ -50,7 +50,6 @@ export const Button = styled.button`
   text-decoration: none;
   margin: 0px 20px;
   padding: 12px 24px;
-
   ${props => props.hidden && "hidden"} :focus {
     border: none;
     outline: none;
@@ -92,4 +91,12 @@ export const SlideContainer = styled.p`
   width: 80%;
   margin-left: 5em;
   text-align: center;
+`
+
+export const Green = styled.span`
+  color: green;
+`
+
+export const Red = styled.span`
+  color: red;
 `

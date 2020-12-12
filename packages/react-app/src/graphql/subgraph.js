@@ -24,6 +24,7 @@ export const XDAI_TOKEN_DATA = gql`
     }){
       id,
       symbol,
+      decimals,
       totalLiquidity
       tradeVolumeUSD
       untrackedVolumeUSD
