@@ -5,6 +5,7 @@ import {
 
 export default function(props) {
   const {data, xKey, yKeys, brush, axis } = props
+  console.log('***', {data})
   const colors = [
     '#8884d8', '#82ca9d'
   ]
@@ -35,3 +36,4 @@ export default function(props) {
     </LineChart>
   );
 }
+

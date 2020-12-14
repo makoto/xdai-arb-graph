@@ -100,3 +100,8 @@ export const Green = styled.span`
 export const Red = styled.span`
   color: red;
 `
+
+export const NumberInput = styled.input`
+ width: 3em;
+ margin: 1em;
+`

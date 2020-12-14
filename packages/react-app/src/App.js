@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Contract } from "@ethersproject/contracts";
 import { getDefaultProvider, JsonRpcProvider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
-import { Body, SlideContainer, Slider, Container, Header, Link, Button, Red, Green } from "./components";
+import { Body, SlideContainer, Slider, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
-
 import { addresses, abis } from "@project/contracts";
 import {
   GET_HOUR_DATA,
@@ -15,10 +14,8 @@ import {
 // import indexHistories from "./data/indexHistories"
 import Chart from "./components/chart"
 import moment from 'moment'
-import _ from 'lodash'
-const bridgeAbi = [{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"relayTokens","inputs":[{"type":"address","name":"token"},{"type":"uint256","name":"_value"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setExecutionMaxPerTx","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_maxPerTx"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"maxPerTx","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"isRewardAddress","inputs":[{"type":"address","name":"_addr"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"fixFailedMessage","inputs":[{"type":"bytes32","name":"_messageId"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setBridgeContract","inputs":[{"type":"address","name":"_bridgeContract"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"withinLimit","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_amount"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"removeRewardAddress","inputs":[{"type":"address","name":"_addr"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"handleBridgedTokens","inputs":[{"type":"address","name":"_token"},{"type":"address","name":"_recipient"},{"type":"uint256","name":"_value"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"executionMaxPerTx","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setTokenImage","inputs":[{"type":"address","name":"_tokenImage"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"isTokenRegistered","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setDailyLimit","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_dailyLimit"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"deployAndHandleBridgedTokens","inputs":[{"type":"address","name":"_token"},{"type":"string","name":"_name"},{"type":"string","name":"_symbol"},{"type":"uint8","name":"_decimals"},{"type":"address","name":"_recipient"},{"type":"uint256","name":"_value"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"isInitialized","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"withinExecutionLimit","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_amount"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"getCurrentDay","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"executionDailyLimit","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"pure","payable":false,"outputs":[{"type":"bytes4","name":"_data"}],"name":"getBridgeMode","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"foreignTokenAddress","inputs":[{"type":"address","name":"_homeToken"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setFee","inputs":[{"type":"bytes32","name":"_feeType"},{"type":"address","name":"_token"},{"type":"uint256","name":"_fee"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bool","name":""}],"name":"messageFixed","inputs":[{"type":"bytes32","name":"_messageId"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"getFee","inputs":[{"type":"bytes32","name":"_feeType"},{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"claimTokens","inputs":[{"type":"address","name":"_token"},{"type":"address","name":"_to"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"getNextRewardAddress","inputs":[{"type":"address","name":"_address"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setMediatorContractOnOtherSide","inputs":[{"type":"address","name":"_mediatorContract"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"calculateFee","inputs":[{"type":"bytes32","name":"_feeType"},{"type":"address","name":"_token"},{"type":"uint256","name":"_value"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"rewardAddressCount","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"maxAvailablePerTx","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setExecutionDailyLimit","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_dailyLimit"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"mediatorContractOnOtherSide","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"owner","inputs":[],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"requestFailedMessageFix","inputs":[{"type":"bytes32","name":"_messageId"}],"constant":false},{"type":"function","stateMutability":"pure","payable":false,"outputs":[{"type":"uint64","name":"major"},{"type":"uint64","name":"minor"},{"type":"uint64","name":"patch"}],"name":"getBridgeInterfacesVersion","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"minPerTx","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[{"type":"bool","name":""}],"name":"onTokenTransfer","inputs":[{"type":"address","name":"_from"},{"type":"uint256","name":"_value"},{"type":"bytes","name":"_data"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"totalSpentPerDay","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_day"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"relayTokens","inputs":[{"type":"address","name":"token"},{"type":"address","name":"_receiver"},{"type":"uint256","name":"_value"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"addRewardAddress","inputs":[{"type":"address","name":"_addr"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"requestGasLimit","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"tokenImage","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"F_ADDR","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"bridgeContract","inputs":[],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setMaxPerTx","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_maxPerTx"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address","name":""}],"name":"homeTokenAddress","inputs":[{"type":"address","name":"_foreignToken"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"address[]","name":""}],"name":"rewardAddressList","inputs":[],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setMinPerTx","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_minPerTx"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[{"type":"bool","name":""}],"name":"initialize","inputs":[{"type":"address","name":"_bridgeContract"},{"type":"address","name":"_mediatorContract"},{"type":"uint256[3]","name":"_dailyLimitMaxPerTxMinPerTxArray"},{"type":"uint256[2]","name":"_executionDailyLimitExecutionMaxPerTxArray"},{"type":"uint256","name":"_requestGasLimit"},{"type":"address","name":"_owner"},{"type":"address","name":"_tokenImage"},{"type":"address[]","name":"_rewardAddreses"},{"type":"uint256[2]","name":"_fees"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"totalExecutedPerDay","inputs":[{"type":"address","name":"_token"},{"type":"uint256","name":"_day"}],"constant":true},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"transferOwnership","inputs":[{"type":"address","name":"newOwner"}],"constant":false},{"type":"function","stateMutability":"nonpayable","payable":false,"outputs":[],"name":"setRequestGasLimit","inputs":[{"type":"uint256","name":"_requestGasLimit"}],"constant":false},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bytes32","name":""}],"name":"FOREIGN_TO_HOME_FEE","inputs":[],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"uint256","name":""}],"name":"dailyLimit","inputs":[{"type":"address","name":"_token"}],"constant":true},{"type":"function","stateMutability":"view","payable":false,"outputs":[{"type":"bytes32","name":""}],"name":"HOME_TO_FOREIGN_FEE","inputs":[],"constant":true},{"type":"event","name":"NewTokenRegistered","inputs":[{"type":"address","name":"foreignToken","indexed":true},{"type":"address","name":"homeToken","indexed":true}],"anonymous":false},{"type":"event","name":"FeeUpdated","inputs":[{"type":"bytes32","name":"feeType","indexed":false},{"type":"address","name":"token","indexed":true},{"type":"uint256","name":"fee","indexed":false}],"anonymous":false},{"type":"event","name":"FeeDistributed","inputs":[{"type":"uint256","name":"fee","indexed":false},{"type":"address","name":"token","indexed":true},{"type":"bytes32","name":"messageId","indexed":true}],"anonymous":false},{"type":"event","name":"FailedMessageFixed","inputs":[{"type":"bytes32","name":"messageId","indexed":true},{"type":"address","name":"token","indexed":false},{"type":"address","name":"recipient","indexed":false},{"type":"uint256","name":"value","indexed":false}],"anonymous":false},{"type":"event","name":"TokensBridged","inputs":[{"type":"address","name":"token","indexed":true},{"type":"address","name":"recipient","indexed":true},{"type":"uint256","name":"value","indexed":false},{"type":"bytes32","name":"messageId","indexed":true}],"anonymous":false},{"type":"event","name":"DailyLimitChanged","inputs":[{"type":"address","name":"token","indexed":true},{"type":"uint256","name":"newLimit","indexed":false}],"anonymous":false},{"type":"event","name":"ExecutionDailyLimitChanged","inputs":[{"type":"address","name":"token","indexed":true},{"type":"uint256","name":"newLimit","indexed":false}],"anonymous":false},{"type":"event","name":"OwnershipTransferred","inputs":[{"type":"address","name":"previousOwner","indexed":false},{"type":"address","name":"newOwner","indexed":false}],"anonymous":false},{"type":"event","name":"RewardAddressAdded","inputs":[{"type":"address","name":"addr","indexed":true}],"anonymous":false},{"type":"event","name":"RewardAddressRemoved","inputs":[{"type":"address","name":"addr","indexed":true}],"anonymous":false}]
-
-const routerAbi = [{"type":"constructor","stateMutability":"nonpayable","inputs":[{"type":"address","name":"_factory","internalType":"address"},{"type":"address","name":"_WETH","internalType":"address"}]},{"type":"function","stateMutability":"view","outputs":[{"type":"address","name":"","internalType":"address"}],"name":"WETH","inputs":[]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountA","internalType":"uint256"},{"type":"uint256","name":"amountB","internalType":"uint256"},{"type":"uint256","name":"liquidity","internalType":"uint256"}],"name":"addLiquidity","inputs":[{"type":"address","name":"tokenA","internalType":"address"},{"type":"address","name":"tokenB","internalType":"address"},{"type":"uint256","name":"amountADesired","internalType":"uint256"},{"type":"uint256","name":"amountBDesired","internalType":"uint256"},{"type":"uint256","name":"amountAMin","internalType":"uint256"},{"type":"uint256","name":"amountBMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"payable","outputs":[{"type":"uint256","name":"amountToken","internalType":"uint256"},{"type":"uint256","name":"amountETH","internalType":"uint256"},{"type":"uint256","name":"liquidity","internalType":"uint256"}],"name":"addLiquidityETH","inputs":[{"type":"address","name":"token","internalType":"address"},{"type":"uint256","name":"amountTokenDesired","internalType":"uint256"},{"type":"uint256","name":"amountTokenMin","internalType":"uint256"},{"type":"uint256","name":"amountETHMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"view","outputs":[{"type":"address","name":"","internalType":"address"}],"name":"factory","inputs":[]},{"type":"function","stateMutability":"pure","outputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"}],"name":"getAmountIn","inputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"},{"type":"uint256","name":"reserveIn","internalType":"uint256"},{"type":"uint256","name":"reserveOut","internalType":"uint256"}]},{"type":"function","stateMutability":"pure","outputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"}],"name":"getAmountOut","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"uint256","name":"reserveIn","internalType":"uint256"},{"type":"uint256","name":"reserveOut","internalType":"uint256"}]},{"type":"function","stateMutability":"view","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"getAmountsIn","inputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"}]},{"type":"function","stateMutability":"view","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"getAmountsOut","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"}]},{"type":"function","stateMutability":"pure","outputs":[{"type":"uint256","name":"amountB","internalType":"uint256"}],"name":"quote","inputs":[{"type":"uint256","name":"amountA","internalType":"uint256"},{"type":"uint256","name":"reserveA","internalType":"uint256"},{"type":"uint256","name":"reserveB","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountA","internalType":"uint256"},{"type":"uint256","name":"amountB","internalType":"uint256"}],"name":"removeLiquidity","inputs":[{"type":"address","name":"tokenA","internalType":"address"},{"type":"address","name":"tokenB","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountAMin","internalType":"uint256"},{"type":"uint256","name":"amountBMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountToken","internalType":"uint256"},{"type":"uint256","name":"amountETH","internalType":"uint256"}],"name":"removeLiquidityETH","inputs":[{"type":"address","name":"token","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountTokenMin","internalType":"uint256"},{"type":"uint256","name":"amountETHMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountETH","internalType":"uint256"}],"name":"removeLiquidityETHSupportingFeeOnTransferTokens","inputs":[{"type":"address","name":"token","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountTokenMin","internalType":"uint256"},{"type":"uint256","name":"amountETHMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountToken","internalType":"uint256"},{"type":"uint256","name":"amountETH","internalType":"uint256"}],"name":"removeLiquidityETHWithPermit","inputs":[{"type":"address","name":"token","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountTokenMin","internalType":"uint256"},{"type":"uint256","name":"amountETHMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"},{"type":"bool","name":"approveMax","internalType":"bool"},{"type":"uint8","name":"v","internalType":"uint8"},{"type":"bytes32","name":"r","internalType":"bytes32"},{"type":"bytes32","name":"s","internalType":"bytes32"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountETH","internalType":"uint256"}],"name":"removeLiquidityETHWithPermitSupportingFeeOnTransferTokens","inputs":[{"type":"address","name":"token","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountTokenMin","internalType":"uint256"},{"type":"uint256","name":"amountETHMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"},{"type":"bool","name":"approveMax","internalType":"bool"},{"type":"uint8","name":"v","internalType":"uint8"},{"type":"bytes32","name":"r","internalType":"bytes32"},{"type":"bytes32","name":"s","internalType":"bytes32"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256","name":"amountA","internalType":"uint256"},{"type":"uint256","name":"amountB","internalType":"uint256"}],"name":"removeLiquidityWithPermit","inputs":[{"type":"address","name":"tokenA","internalType":"address"},{"type":"address","name":"tokenB","internalType":"address"},{"type":"uint256","name":"liquidity","internalType":"uint256"},{"type":"uint256","name":"amountAMin","internalType":"uint256"},{"type":"uint256","name":"amountBMin","internalType":"uint256"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"},{"type":"bool","name":"approveMax","internalType":"bool"},{"type":"uint8","name":"v","internalType":"uint8"},{"type":"bytes32","name":"r","internalType":"bytes32"},{"type":"bytes32","name":"s","internalType":"bytes32"}]},{"type":"function","stateMutability":"payable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapETHForExactTokens","inputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"payable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapExactETHForTokens","inputs":[{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"payable","outputs":[],"name":"swapExactETHForTokensSupportingFeeOnTransferTokens","inputs":[{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapExactTokensForETH","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[],"name":"swapExactTokensForETHSupportingFeeOnTransferTokens","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapExactTokensForTokens","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[],"name":"swapExactTokensForTokensSupportingFeeOnTransferTokens","inputs":[{"type":"uint256","name":"amountIn","internalType":"uint256"},{"type":"uint256","name":"amountOutMin","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapTokensForExactETH","inputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"},{"type":"uint256","name":"amountInMax","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"function","stateMutability":"nonpayable","outputs":[{"type":"uint256[]","name":"amounts","internalType":"uint256[]"}],"name":"swapTokensForExactTokens","inputs":[{"type":"uint256","name":"amountOut","internalType":"uint256"},{"type":"uint256","name":"amountInMax","internalType":"uint256"},{"type":"address[]","name":"path","internalType":"address[]"},{"type":"address","name":"to","internalType":"address"},{"type":"uint256","name":"deadline","internalType":"uint256"}]},{"type":"receive","stateMutability":"payable"}]
+import _, { set } from 'lodash'
+const XDAICHAIN_ENDPOINT = 'https://dai.poa.network'
 
 function parseData(data, key){
   return (data && data.tokenDayDatas && data.tokenDayDatas.map(d => {
@@ -42,8 +39,10 @@ function App({ mainnetClient }) {
   const [ message, setMessage ] = useState();
   const [ mainnetAddress, setMainnetAddress ] = useState();
   const [ amount, setAmount ] = useState();
+  const [ amount2, setAmount2 ] = useState();
   const [ mainnetPrice, setMainnetPrice ] = useState();
   const [ xDaiPrice, setXdaiPrice ] = useState();
+  const [ quotes, setQuotes ] = useState([]);
   console.log({xDaiAddress, mainnetAddress})
   const { xdaiTokenLoading, xdaiTokenError, data: xdaiTokenData   } = useQuery(XDAI_TOKEN_DATA);
   const { mainnetTokenLoading, mainnetTokenError, data: mainnetTokenData   } = useQuery(MAINNET_TOKEN_DATA, {
@@ -83,10 +82,12 @@ function App({ mainnetClient }) {
   });
 
   async function getMainnetQuote(fromAddress, amount){
+    const inputAmount = parseInt(amount * Math.pow(10, 18))
+    console.log('*** getMainnetQuote1', {fromAddress, amount, inputAmount})
     const daiAddress = '0x6b175474e89094c44da98b954eedeac495271d0f'
-    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${daiAddress}&toTokenAddress=${fromAddress}&amount=${amount * Math.pow(10, 18)}`)
+    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${daiAddress}&toTokenAddress=${fromAddress}&amount=${inputAmount}`)
     const data = await result.json()
-    console.log('*** getMainnetQuote', data)
+    console.log('*** getMainnetQuote2', {fromAddress, amount, data})
 
     setMainnetPrice(data)
     return data
@@ -95,47 +96,41 @@ function App({ mainnetClient }) {
   async function getXDaiQuote(quotePromise){
     let quote = await quotePromise
     console.log('**readOnChainData1', {quote})
-    const defaultProvider = new JsonRpcProvider('https://rpc.xdaichain.com/')
+    const defaultProvider = new JsonRpcProvider(XDAICHAIN_ENDPOINT)
     const wxdaiAddress = '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d'
     const fromAddress = xDaiAddress.id
     const routerAddress = '0x1C232F01118CB8B424793ae03F870aa7D0ac7f77'
     const xdaiAmount = quote.toTokenAmount
+    let xdaiQuotes
     try{
-      const router = new Contract(routerAddress, routerAbi, defaultProvider);
+      const router = new Contract(routerAddress, abis.router, defaultProvider);
       console.log('**getXDaiQuote1', xdaiAmount, [fromAddress, wxdaiAddress])
-      const [token0amount, token1amount] = await router.getAmountsOut(xdaiAmount, [fromAddress, wxdaiAddress])
-      window.token0amount = token0amount
-      window.token1amount = token1amount
-      console.log('**getXDaiQuote2', {token0amount:token0amount.toString(), token1amount:token1amount.toString()})
-      setXdaiPrice(token1amount)
+      xdaiQuotes = await router.getAmountsOut(xdaiAmount, [fromAddress, wxdaiAddress])
+      console.log('**getXDaiQuote1.1', xdaiQuotes)
+      console.log('**getXDaiQuote2', {token0amount:xdaiQuotes[0].toString(), token1amount:xdaiQuotes[1].toString()})
+      setXdaiPrice(xdaiQuotes[1])
     }catch(e){
       console.log('**getXDaiQuote3', e.message)
-      // setMessage(e.message)
       setMessage('Error getting xDai quote')
       return false
     }
-    // if(homeTokenAddress){
-    //   setMessage('')
-    //   setMainnetAddress(homeTokenAddress.toLocaleLowerCase())
-    // }else{
-    //   setMessage('This token does not exist on Mainnet')
-    // }
-    return data
+    return xdaiQuotes[1]
   }
 
   async function readOnChainData(tokenAddress) {
-    console.log('**readOnChainData1', {tokenAddress})
-    const defaultProvider = new JsonRpcProvider('https://rpc.xdaichain.com/')
+    console.log('**readOnChainData1', {tokenAddress, abis})
+    const defaultProvider = new JsonRpcProvider(XDAICHAIN_ENDPOINT)
     let homeTokenAddress
     try{
-      const token = new Contract(tokenAddress, bridgeAbi, defaultProvider);
+      const token = new Contract(tokenAddress, abis.bridge, defaultProvider);
       const bridgeAddress = await token.bridgeContract()
-      const ceaErc20 = new Contract(bridgeAddress, bridgeAbi, defaultProvider);
+      const ceaErc20 = new Contract(bridgeAddress, abis.bridge, defaultProvider);
       homeTokenAddress = await ceaErc20.foreignTokenAddress(tokenAddress);
     }catch(e){
       console.log('**readOnChainData4')
       // setMessage(e.message)
       setMessage('Either error or this token did not come from Mainnet')
+      setMainnetAddress(null)
       return false
     }
     if(homeTokenAddress){
@@ -183,6 +178,9 @@ function App({ mainnetClient }) {
     num = historyData.length  
     const handleXDaiChange = (e) => {
       console.log('***handleXDaiChange', e)
+      setQuotes([])
+      setAmount(null)
+      setAmount2(null)
       readOnChainData(e.value.id)
       setXDaiAddress(e.value)
     }
@@ -190,28 +188,47 @@ function App({ mainnetClient }) {
       console.log('***handleChangeAmont', e.target.value)
       setAmount(e.target.value)
     }
+    const handleChangeAmount2 = (e) => {
+      console.log('***handleChangeAmont', e.target.value)
+      setAmount2(e.target.value)
+    }
 
-    const handleSubmitAmount = (e) => {
-      console.log('*** handleSubmitAMount', {amount})
-      let quote = getMainnetQuote(mainnetAddress, amount)
-      getXDaiQuote(quote)
+    const handleSubmitAmount = async (e) => {
+      setQuotes([])
+      console.log('*** handleSubmitAMount1', {amount, xDaiAddress})
+      let lowerBound = parseInt(amount)
+      let upperBound = parseInt(amount2)
+      let skip = (upperBound - lowerBound) / 5
+      let localQuotes = []
+      for (let i = lowerBound; i <= upperBound; i=i+skip) {
+        let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
+        let xdaiQuote = await getXDaiQuote(mainnetQuote)          
+        let newAmount = (xdaiQuote / Math.pow(10,18))
+        let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
+        let diff = (newAmount - i)
+        console.log('****handleSubmitAmount2', {mainnetQuote, i, newAmount, diff, toAmount})
+        let quote = {
+          fromSymbol:mainnetQuote.fromToken.symbol,
+          amount:i,
+          toAmount,
+          toSymbol:mainnetQuote.toToken.symbol,
+          inverseAmount:parseFloat(mainnetQuote.fromTokenAmount) / parseInt(mainnetQuote.toTokenAmount) / Math.pow(10, (mainnetQuote.fromToken.decimals - mainnetQuote.toToken.decimals)),
+          diff,
+          newAmount
+        }
+        localQuotes.push(quote)
+        console.log('****handleSubmitAmount3', {quotes, quote})
+        // setQuotes([...quotes, quote])
+      }
+      setQuotes(localQuotes)
     }
-    let mainnetPriceToDisplay
-    if(mainnetPrice){
-      const fromDecimal = mainnetPrice.fromToken.decimals
-      const toDecimal = mainnetPrice.toToken.decimals
-      let devider = 1
-      mainnetPriceToDisplay = parseInt(mainnetPrice.toTokenAmount) / parseFloat(mainnetPrice.fromTokenAmount)
-    }
-    console.log('***mainnetPriceToDisplay', {mainnetPrice, mainnetPriceToDisplay})
+    console.log('****quotes', JSON.stringify(quotes))
     return (
       <>
         <Header>⚔️ Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
         <Container>
           <p>
-            This chart is extended from <Link href="https://github.com/makoto/indexcoop-dpi-token">DPI arb chart</Link>.
-            Choose tokens which are on <Link href="https://info.honeyswap.org/tokens">Honeyswap</Link>, Uniswap clone on xDai.
-            <br />
+            The below contains the list ERC20 coins on <a href="http://honeyswap.org">HoneySwap</a>, which is a Uniswap clone on xDai chain.
           </p>
           <div>
             <Select
@@ -219,34 +236,50 @@ function App({ mainnetClient }) {
               onChange={handleXDaiChange}
               options={options}
             />
-            {xdaiTokenData && (
-              <>
+            {xDaiAddress && (
+              <p>
               On xDai: {xDaiAddress && xDaiAddress.id} 
               On Mainnet: {message || mainnetAddress}
-              </>
+              </p>
             )}
-            <input onChange={ handleChangeAmount }>
-            </input>
-            <Button
-              onClick={handleSubmitAmount}
-            >Get Quote</Button>
+            {mainnetAddress && (
+              <p>
+                Simulate exchanging between <NumberInput onChange={ handleChangeAmount }></NumberInput> and 
+                <NumberInput onChange={ handleChangeAmount2 }></NumberInput> worth of DAI to {xDaiAddress.symbol}
+                <Button
+                  onClick={handleSubmitAmount}
+                >Get Quote</Button>
+              </p>
+            )}
             {mainnetPrice && (
               <>
                 <br />
-                {amount} {mainnetPrice.fromToken.symbol} is {
-                  mainnetPrice.toTokenAmount / Math.pow(10,18)
-                } {mainnetPrice.toToken.symbol} 
-                (1 {mainnetPrice.toToken.symbol} is ({parseFloat(mainnetPrice.fromTokenAmount) / parseInt(mainnetPrice.toTokenAmount)}) {mainnetPrice.fromToken.symbol}) on Mainnet is 
-                 { amount < xDaiPrice / Math.pow(10,18) ? (
-                  <Green>{xDaiPrice / Math.pow(10,18)} {mainnetPrice.fromToken.symbol}</Green>
-                 ): (
-                  <Red>{xDaiPrice / Math.pow(10,18)} {mainnetPrice.fromToken.symbol}</Red>
-                 )}
-                 on xDai
+                { mainnetPrice && quotes && quotes.length === 0 && (
+                  <span>Getting quote for {
+                    (mainnetPrice.fromTokenAmount / Math.pow(10, parseInt(mainnetPrice.fromToken.decimals))).toFixed(3)
+                    } {mainnetPrice.fromToken.symbol} </span>
+                ) }
+                {quotes && quotes.length > 0 && (
+                  <>
+                    <h2>Profit simulation graph</h2>
+                    <ul>
+                      {quotes.map(q => (
+                        <li>
+                          {parseFloat(q.amount).toFixed(3)} {q.fromSymbol} is {parseFloat(q.toAmount).toFixed(3)} (1 {q.toSymbol} is {parseFloat(q.inverseAmount).toFixed(5)} {q.fromSymbol})
+                           on Mainnet is {parseFloat(q.newAmount).toFixed(5)} {q.fromSymbol} on xDai (diff is {
+                             q.diff > 0 ? (<Green>{parseFloat(q.diff).toFixed(5)}</Green>) : (<Red>{parseFloat(q.diff).toFixed(5)}</Red>)
+                           })
+                        </li>
+                      ))}
+                    </ul>
+                    <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
+                  </>
+                )}
               </>
             )}
-            { (message || !historyData || num === 0 ) ? ('') : (
+            { (message || !historyData || num === 0 || (quotes && quotes.length > 0) ) ? ('') : (
               <>
+                <h2>Historical Data</h2>
                 <SlideContainer>
                   <p>
                     Plotting { num } points btw { historyData[0].date } and { historyData[num - 1].date } 
