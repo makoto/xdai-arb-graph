@@ -222,6 +222,7 @@ function App({ mainnetClient }) {
       }
       setQuotes(localQuotes)
     }
+    let routes = mainnetPrice && mainnetPrice.protocols && mainnetPrice.protocols[0].map(p => p[0].name)
     console.log('****quotes', JSON.stringify(quotes))
     return (
       <>
@@ -273,6 +274,10 @@ function App({ mainnetClient }) {
                       ))}
                     </ul>
                     <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
+                    <h2>Arb steps</h2>
+                    <h3>1.<Link target="_blank" href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from DAI to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
+                    <h3>2.<Link target="_blank" href={`https://omni.xdaichain.com`}>Transfer { quotes[0].fromSymbol } to xDai on Omnichain</Link>  </h3>
+                    <h3>3.<Link target="_blank" href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { quotes[0].fromSymbol } to Dai on HoneySwap</Link> </h3>
                   </>
                 )}
               </>
