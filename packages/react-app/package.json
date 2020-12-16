@@ -52,6 +52,6 @@
     "ipfs": "yarn build && node scripts/ipfs.js",
     "start": "react-scripts start",
     "test": "react-scripts test",
-    "deploy:dev": "surge build dpi-arb-graph.surge.sh"
+    "deploy:dev": "surge build xdai-arb-graph.surge.sh"
   }
 }

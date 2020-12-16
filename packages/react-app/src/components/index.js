@@ -5,9 +5,10 @@ export const Container = styled.div`
 `
 
 export const Header = styled.header`
-  background-color: #282c34;
+  background-color: rgb(72, 169, 166);
   min-height: 70px;
   display: flex;
+  padding-left:1em;
   flex-direction: row;
   align-items: center;
   color: white;
@@ -25,9 +26,9 @@ export const Body = styled.body`
   min-height: calc(100vh - 70px);
 `;
 
-export const Image = styled.img`
-  height: 40vmin;
-  margin-bottom: 16px;
+export const SpinningImage = styled.img`
+  width: 50px;
+  vertical-align: middle;
   pointer-events: none;
 `;
 
@@ -35,16 +36,16 @@ export const Link = styled.a.attrs({
   target: "_blank",
   rel: "noopener noreferrer",
 })`
-  color: #61dafb;
+  color: rgb(72, 169, 166);
   margin-top: 10px;
 `;
 
 export const Button = styled.button`
-  background-color: green;
+  background-color: ${props => props.disabled ? 'grey' : 'rgb(72, 169, 166)' };
   border: none;
   border-radius: 8px;
-  color: #282c34;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'default' : 'pointer' };
+  color: white;
   font-size: 16px;
   text-align: center;
   text-decoration: none;

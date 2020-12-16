@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Contract } from "@ethersproject/contracts";
-import { getDefaultProvider, JsonRpcProvider } from "@ethersproject/providers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
-import { Body, SlideContainer, Slider, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
+import { Body, SlideContainer, SpinningImage, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
 import { addresses, abis } from "@project/contracts";
 import {
@@ -34,6 +34,7 @@ function numberWithCommas(x) {
 }
 
 function App({ mainnetClient }) {
+  const [ pending, setPending ] = useState(false);
   const [ selectedOption, setSelectedOption ] = useState();
   const [ xDaiAddress, setXDaiAddress ] = useState();
   const [ message, setMessage ] = useState();
@@ -177,29 +178,26 @@ function App({ mainnetClient }) {
     historyData = historyData.reverse()
     num = historyData.length  
     const handleXDaiChange = (e) => {
-      console.log('***handleXDaiChange', e)
       setQuotes([])
-      setAmount(null)
-      setAmount2(null)
       readOnChainData(e.value.id)
       setXDaiAddress(e.value)
     }
     const handleChangeAmount = (e) => {
-      console.log('***handleChangeAmont', e.target.value)
       setAmount(e.target.value)
     }
     const handleChangeAmount2 = (e) => {
-      console.log('***handleChangeAmont', e.target.value)
       setAmount2(e.target.value)
     }
 
     const handleSubmitAmount = async (e) => {
+      setPending(true)
       setQuotes([])
       console.log('*** handleSubmitAMount1', {amount, xDaiAddress})
       let lowerBound = parseInt(amount)
       let upperBound = parseInt(amount2)
       let skip = (upperBound - lowerBound) / 5
       let localQuotes = []
+      console.log('*** handleSubmitAMount1', {lowerBound, upperBound, skip})
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
         let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
         let xdaiQuote = await getXDaiQuote(mainnetQuote)          
@@ -218,9 +216,9 @@ function App({ mainnetClient }) {
         }
         localQuotes.push(quote)
         console.log('****handleSubmitAmount3', {quotes, quote})
-        // setQuotes([...quotes, quote])
       }
       setQuotes(localQuotes)
+      setPending(false)
     }
     let routes = mainnetPrice && mainnetPrice.protocols && mainnetPrice.protocols[0].map(p => p[0].name)
     console.log('****quotes', JSON.stringify(quotes))
@@ -229,10 +227,13 @@ function App({ mainnetClient }) {
         <Header>⚔️ Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
         <Container>
           <p>
-            The below contains the list ERC20 coins on <a href="http://honeyswap.org">HoneySwap</a>, which is a Uniswap clone on xDai chain.
+            This site allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and <Link href="https://www.xdaichain.com/">xDai side chain</Link>.
+            <br/>
+            The below contains the list ERC20 coins on <Link href="http://honeyswap.org">HoneySwap</Link>, which is a Uniswap clone on xDai chain.
           </p>
           <div>
             <Select
+              placeholder='Select ERC 20 tokens listed on Honey Swap'
               value={selectedOption}
               onChange={handleXDaiChange}
               options={options}
@@ -245,18 +246,27 @@ function App({ mainnetClient }) {
             )}
             {mainnetAddress && (
               <p>
-                Simulate exchanging between <NumberInput onChange={ handleChangeAmount }></NumberInput> and 
-                <NumberInput onChange={ handleChangeAmount2 }></NumberInput> worth of DAI to {xDaiAddress.symbol}
-                <Button
-                  onClick={handleSubmitAmount}
-                >Get Quote</Button>
+                Simulate exchanging between <NumberInput onChange={ handleChangeAmount } placeholder={1}></NumberInput> and 
+                <NumberInput onChange={ handleChangeAmount2 } placeholder={100}></NumberInput> worth of DAI to {xDaiAddress.symbol}
+                { amount && amount2 ? (
+                  <Button
+                    onClick={handleSubmitAmount}
+                  >Get Quote</Button>
+
+                ) : (
+                  <Button disabled={true}
+                    onClick={handleSubmitAmount}
+                  >Get Quote</Button>
+                )}
               </p>
             )}
             {mainnetPrice && (
               <>
                 <br />
-                { mainnetPrice && quotes && quotes.length === 0 && (
-                  <span>Getting quote for {
+                { pending && (
+                  <span>
+                    <SpinningImage src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" />
+                    Getting quote for {
                     (mainnetPrice.fromTokenAmount / Math.pow(10, parseInt(mainnetPrice.fromToken.decimals))).toFixed(3)
                     } {mainnetPrice.fromToken.symbol} </span>
                 ) }
@@ -275,9 +285,9 @@ function App({ mainnetClient }) {
                     </ul>
                     <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
                     <h2>Arb steps</h2>
-                    <h3>1.<Link target="_blank" href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from DAI to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
-                    <h3>2.<Link target="_blank" href={`https://omni.xdaichain.com`}>Transfer { quotes[0].fromSymbol } to xDai on Omnichain</Link>  </h3>
-                    <h3>3.<Link target="_blank" href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { quotes[0].fromSymbol } to Dai on HoneySwap</Link> </h3>
+                    <h3>1.<Link href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from DAI to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
+                    <h3>2.<Link href={`https://omni.xdaichain.com`}>Transfer { quotes[0].fromSymbol } to xDai on Omnichain</Link>  </h3>
+                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { quotes[0].fromSymbol } to Dai on HoneySwap</Link> </h3>
                   </>
                 )}
               </>
