@@ -241,7 +241,7 @@ function App({ mainnetClient }) {
             {xDaiAddress && (
               <p>
               On xDai: {xDaiAddress && xDaiAddress.id} 
-              On Mainnet: {message || mainnetAddress}
+              On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : mainnetAddress}
               </p>
             )}
             {mainnetAddress && (
@@ -286,8 +286,8 @@ function App({ mainnetClient }) {
                     <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
                     <h2>Arb steps</h2>
                     <h3>1.<Link href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from DAI to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
-                    <h3>2.<Link href={`https://omni.xdaichain.com`}>Transfer { quotes[0].fromSymbol } to xDai on Omnichain</Link>  </h3>
-                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { quotes[0].fromSymbol } to Dai on HoneySwap</Link> </h3>
+                    <h3>2.<Link href={`https://omni.xdaichain.com`}>Transfer { mainnetPrice.toToken.symbol } to xDai on Omnichain</Link>  </h3>
+                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { mainnetPrice.toToken.symbol } to xDai on HoneySwap</Link> </h3>
                   </>
                 )}
               </>
