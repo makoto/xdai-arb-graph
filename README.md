@@ -2,6 +2,8 @@
 
 # ⚔️ Crosschain Arbitrage 🦅 opportunity graph 📈
 
+![](./hero.png)
+
 Crosschain Arbitrage opportunity graph allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and xDai side chain.
 
 - [Explainer video](https://www.youtube.com/watch?v=4cnzp29hk7s)
