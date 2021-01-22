@@ -7,7 +7,7 @@ import Select from 'react-select';
 import { addresses, abis } from "@project/contracts";
 import {
   GET_HOUR_DATA,
-  XDAI_TOKEN_DATA,
+  MATIC_TOKEN_DATA,
   MAINNET_TOKEN_DATA
 } from "./graphql/subgraph";
 // import indexEntities from "./data/indexEntities"
@@ -15,7 +15,7 @@ import {
 import Chart from "./components/chart"
 import moment from 'moment'
 import _, { set } from 'lodash'
-const XDAICHAIN_ENDPOINT = 'https://dai.poa.network'
+const MATICCHAIN_ENDPOINT = 'https://dai.poa.network'
 
 function parseData(data, key){
   return (data && data.tokenDayDatas && data.tokenDayDatas.map(d => {
@@ -36,25 +36,25 @@ function numberWithCommas(x) {
 function App({ mainnetClient }) {
   const [ pending, setPending ] = useState(false);
   const [ selectedOption, setSelectedOption ] = useState();
-  const [ xDaiAddress, setXDaiAddress ] = useState();
+  const [ maticAddress, setMaticAddress ] = useState();
   const [ message, setMessage ] = useState();
   const [ mainnetAddress, setMainnetAddress ] = useState();
   const [ amount, setAmount ] = useState();
   const [ amount2, setAmount2 ] = useState();
   const [ mainnetPrice, setMainnetPrice ] = useState();
-  const [ xDaiPrice, setXdaiPrice ] = useState();
+  const [ maticPrice, setMaticPrice ] = useState();
   const [ quotes, setQuotes ] = useState([]);
-  console.log({xDaiAddress, mainnetAddress})
-  const { xdaiTokenLoading, xdaiTokenError, data: xdaiTokenData   } = useQuery(XDAI_TOKEN_DATA);
+  console.log({maticAddress, mainnetAddress})
+  const { maticTokenLoading, maticTokenError, data: maticTokenData   } = useQuery(MATIC_TOKEN_DATA);
   const { mainnetTokenLoading, mainnetTokenError, data: mainnetTokenData   } = useQuery(MAINNET_TOKEN_DATA, {
     client:mainnetClient,
     variables:{
-      symbol:xDaiAddress && xDaiAddress.symbol
+      symbol:maticAddress && maticAddress.symbol
     },
-    skip: !xDaiAddress
+    skip: !maticAddress
   });
 
-  const options = xdaiTokenData && xdaiTokenData.tokens && xdaiTokenData.tokens.map(t => {
+  const options = maticTokenData && maticTokenData.tokens && maticTokenData.tokens.map(t => {
     return {
       label: `${t.symbol} (trade volume: USD ${numberWithCommas(parseInt(t.tradeVolumeUSD))})`,
       value:t
@@ -72,8 +72,8 @@ function App({ mainnetClient }) {
   })
 
   const { loading, error, data  } = useQuery(GET_HOUR_DATA, {
-    variables:{ tokenId: xDaiAddress && xDaiAddress.id },
-    skip: !xDaiAddress
+    variables:{ tokenId: maticAddress && maticAddress.id },
+    skip: !maticAddress
   });
 
   const { loading:loading2, error:error2, data:data2  } = useQuery(GET_HOUR_DATA, {
@@ -97,30 +97,30 @@ function App({ mainnetClient }) {
   async function getXDaiQuote(quotePromise){
     let quote = await quotePromise
     console.log('**readOnChainData1', {quote})
-    const defaultProvider = new JsonRpcProvider(XDAICHAIN_ENDPOINT)
-    const wxdaiAddress = '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d'
-    const fromAddress = xDaiAddress.id
+    const defaultProvider = new JsonRpcProvider(MATICCHAIN_ENDPOINT)
+    const wmaticAddress = '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d'
+    const fromAddress = maticAddress.id
     const routerAddress = '0x1C232F01118CB8B424793ae03F870aa7D0ac7f77'
-    const xdaiAmount = quote.toTokenAmount
-    let xdaiQuotes
+    const maticAmount = quote.toTokenAmount
+    let maticQuotes
     try{
       const router = new Contract(routerAddress, abis.router, defaultProvider);
-      console.log('**getXDaiQuote1', xdaiAmount, [fromAddress, wxdaiAddress])
-      xdaiQuotes = await router.getAmountsOut(xdaiAmount, [fromAddress, wxdaiAddress])
-      console.log('**getXDaiQuote1.1', xdaiQuotes)
-      console.log('**getXDaiQuote2', {token0amount:xdaiQuotes[0].toString(), token1amount:xdaiQuotes[1].toString()})
-      setXdaiPrice(xdaiQuotes[1])
+      console.log('**getXDaiQuote1', maticAmount, [fromAddress, wmaticAddress])
+      maticQuotes = await router.getAmountsOut(maticAmount, [fromAddress, wmaticAddress])
+      console.log('**getXDaiQuote1.1', maticQuotes)
+      console.log('**getXDaiQuote2', {token0amount:maticQuotes[0].toString(), token1amount:maticQuotes[1].toString()})
+      setMaticPrice(maticQuotes[1])
     }catch(e){
       console.log('**getXDaiQuote3', e.message)
-      setMessage('Error getting xDai quote')
+      setMessage('Error getting Matic quote')
       return false
     }
-    return xdaiQuotes[1]
+    return maticQuotes[1]
   }
 
   async function readOnChainData(tokenAddress) {
     console.log('**readOnChainData1', {tokenAddress, abis})
-    const defaultProvider = new JsonRpcProvider(XDAICHAIN_ENDPOINT)
+    const defaultProvider = new JsonRpcProvider(MATICCHAIN_ENDPOINT)
     let homeTokenAddress
     try{
       const token = new Contract(tokenAddress, abis.bridge, defaultProvider);
@@ -142,7 +142,7 @@ function App({ mainnetClient }) {
     }
   }
 
-  // console.log('***data', {xdaiTokenData, data, data2})
+  // console.log('***data', {maticTokenData, data, data2})
   let historyData = [], historyData1, historyData2, num
   // React.useEffect(() => {
   //   console.log({indexHistories})
@@ -155,17 +155,17 @@ function App({ mainnetClient }) {
     return(JSON.stringify(error))
   }else{
     // console.log({data})
-    historyData1 = parseData(data, 'xdai')
+    historyData1 = parseData(data, 'matic')
     historyData2 = parseData(data2, 'mainnet')
-    // console.log('***data', {xDaiAddress, mainnetAddress, historyData, historyData1, historyData2})
+    // console.log('***data', {maticAddress, mainnetAddress, historyData, historyData1, historyData2})
     if( historyData2 && historyData2.length > 0){
       for (let index = 0; index < historyData2.length; index++) {
         const d2 = historyData2[index];
         const d1 = historyData1[index];
         let pctDiff
         if (d1 && d2){
-          const diff = (d1['xdaiPrice'] - d2['mainnetPrice'])
-          const mid = (d1['xdaiPrice'] + d2['mainnetPrice']) / 2
+          const diff = (d1['maticPrice'] - d2['mainnetPrice'])
+          const mid = (d1['maticPrice'] + d2['mainnetPrice']) / 2
           pctDiff =  diff / mid * 100
           if(pctDiff > 30) pctDiff = 30
           if(pctDiff < -30) pctDiff = -30
@@ -180,7 +180,7 @@ function App({ mainnetClient }) {
     const handleXDaiChange = (e) => {
       setQuotes([])
       readOnChainData(e.value.id)
-      setXDaiAddress(e.value)
+      setMaticAddress(e.value)
     }
     const handleChangeAmount = (e) => {
       setAmount(e.target.value)
@@ -192,7 +192,7 @@ function App({ mainnetClient }) {
     const handleSubmitAmount = async (e) => {
       setPending(true)
       setQuotes([])
-      console.log('*** handleSubmitAMount1', {amount, xDaiAddress})
+      console.log('*** handleSubmitAMount1', {amount, maticAddress})
       let lowerBound = parseInt(amount)
       let upperBound = parseInt(amount2)
       let skip = (upperBound - lowerBound) / 5
@@ -200,8 +200,8 @@ function App({ mainnetClient }) {
       console.log('*** handleSubmitAMount1', {lowerBound, upperBound, skip})
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
         let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
-        let xdaiQuote = await getXDaiQuote(mainnetQuote)          
-        let newAmount = (xdaiQuote / Math.pow(10,18))
+        let maticQuote = await getXDaiQuote(mainnetQuote)          
+        let newAmount = (maticQuote / Math.pow(10,18))
         let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
         let diff = (newAmount - i)
         console.log('****handleSubmitAmount2', {mainnetQuote, i, newAmount, diff, toAmount})
@@ -227,9 +227,9 @@ function App({ mainnetClient }) {
         <Header>⚔️ Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
         <Container>
           <p>
-            This site allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and <Link href="https://www.xdaichain.com/">xDai side chain</Link>.
+            This site allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and <Link href="https://www.maticchain.com/">Matic side chain</Link>.
             <br/>
-            The below contains the list ERC20 coins on <Link href="http://honeyswap.org">HoneySwap</Link>, which is a Uniswap clone on xDai chain.
+            The below contains the list ERC20 coins on <Link href="http://honeyswap.org">HoneySwap</Link>, which is a Uniswap clone on Matic chain.
           </p>
           <div>
             <Select
@@ -238,16 +238,16 @@ function App({ mainnetClient }) {
               onChange={handleXDaiChange}
               options={options}
             />
-            {xDaiAddress && (
+            {maticAddress && (
               <p>
-              On xDai: {xDaiAddress && xDaiAddress.id} 
+              On Matic: {maticAddress && maticAddress.id} 
               On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : mainnetAddress}
               </p>
             )}
             {mainnetAddress && (
               <p>
                 Simulate exchanging between <NumberInput onChange={ handleChangeAmount } placeholder={1}></NumberInput> and 
-                <NumberInput onChange={ handleChangeAmount2 } placeholder={100}></NumberInput> worth of DAI to {xDaiAddress.symbol}
+                <NumberInput onChange={ handleChangeAmount2 } placeholder={100}></NumberInput> worth of DAI to {maticAddress.symbol}
                 { amount && amount2 ? (
                   <Button
                     onClick={handleSubmitAmount}
@@ -277,7 +277,7 @@ function App({ mainnetClient }) {
                       {quotes.map(q => (
                         <li>
                           {parseFloat(q.amount).toFixed(3)} {q.fromSymbol} is {parseFloat(q.toAmount).toFixed(3)} (1 {q.toSymbol} is {parseFloat(q.inverseAmount).toFixed(5)} {q.fromSymbol})
-                           on Mainnet is {parseFloat(q.newAmount).toFixed(5)} {q.fromSymbol} on xDai (diff is {
+                           on Mainnet is {parseFloat(q.newAmount).toFixed(5)} {q.fromSymbol} on Matic (diff is {
                              q.diff > 0 ? (<Green>{parseFloat(q.diff).toFixed(5)}</Green>) : (<Red>{parseFloat(q.diff).toFixed(5)}</Red>)
                            })
                         </li>
@@ -286,8 +286,8 @@ function App({ mainnetClient }) {
                     <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
                     <h2>Arb steps</h2>
                     <h3>1.<Link href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from DAI to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
-                    <h3>2.<Link href={`https://omni.xdaichain.com`}>Transfer { mainnetPrice.toToken.symbol } to xDai on Omnichain</Link>  </h3>
-                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${xDaiAddress && xDaiAddress.id}`}>Exhange from { mainnetPrice.toToken.symbol } to xDai on HoneySwap</Link> </h3>
+                    <h3>2.<Link href={`https://omni.maticchain.com`}>Transfer { mainnetPrice.toToken.symbol } to Matic on Omnichain</Link>  </h3>
+                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${maticAddress && maticAddress.id}`}>Exhange from { mainnetPrice.toToken.symbol } to Matic on HoneySwap</Link> </h3>
                   </>
                 )}
               </>
@@ -302,9 +302,9 @@ function App({ mainnetClient }) {
 
                 </SlideContainer>
                 <Body>
-                  <Chart data={historyData } xKey={'date'} yKeys={['xdaiPrice', 'mainnetPrice']} />
+                  <Chart data={historyData } xKey={'date'} yKeys={['maticPrice', 'mainnetPrice']} />
                   <Chart data={historyData } xKey={'date'} yKeys={['pctDiff']} />
-                  <Chart data={historyData } xKey={'date'} yKeys={['xdaiLiquidity', 'xdaiVolume']} />
+                  <Chart data={historyData } xKey={'date'} yKeys={['maticLiquidity', 'maticVolume']} />
                   <Chart data={historyData } xKey={'date'} yKeys={['mainnetLiquidity', 'mainnetVolume']} />
                 </Body>
               </>
