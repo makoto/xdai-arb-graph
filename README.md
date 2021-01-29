@@ -1,6 +1,6 @@
 
 
-# ⚔️ Crosschain Arbitrage 🦅 opportunity graph 📈
+# ⛩️ Crosschain Arbitrage 🦅 opportunity graph 📈
 
 ![](./hero.png)
 

@@ -34,6 +34,15 @@ export const MATIC_TOKEN_DATA = gql`
   }
 `
 
+export const MATIC_TOKEN_MAPPING = gql`
+  query{
+    tokenMappings(first:1000){
+      rootToken
+      childToken
+    }
+  }
+`
+
 export const MAINNET_TOKEN_DATA = gql`
   query tokens($symbol:String!){
     tokens(first:100, orderBy:tradeVolumeUSD, orderDirection: desc, where:{

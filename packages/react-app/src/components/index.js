@@ -5,7 +5,7 @@ export const Container = styled.div`
 `
 
 export const Header = styled.header`
-  background-color: rgb(72, 169, 166);
+  background-color: #003cb2;
   min-height: 70px;
   display: flex;
   padding-left:1em;
@@ -36,7 +36,7 @@ export const Link = styled.a.attrs({
   target: "_blank",
   rel: "noopener noreferrer",
 })`
-  color: rgb(72, 169, 166);
+  color: #003cb2;
   margin-top: 10px;
 `;
 
