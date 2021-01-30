@@ -16,7 +16,7 @@ import Chart from "./components/chart"
 import moment from 'moment'
 import _ from 'lodash'
 const MATICCHAIN_ENDPOINT = 'https://rpc-mainnet.maticvigil.com/'
-const baseAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
+const BASE_TOKEN_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
 const baseDecimals = 6
 
 function parseData(data, key){
@@ -30,7 +30,6 @@ function parseData(data, key){
     return r
   })) || []
 }
-
 
 function App({ mainnetClient, mainnetMaticClient }) {
   const [ pending, setPending ] = useState(false);
@@ -89,12 +88,9 @@ function App({ mainnetClient, mainnetMaticClient }) {
   async function getMainnetQuote(fromAddress, amount){
     const inputAmount = parseInt(amount * Math.pow(10, baseDecimals))
     console.log('*** getMainnetQuote1', {fromAddress, amount, inputAmount})
-
-    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${baseAddress}&toTokenAddress=${fromAddress}&amount=${inputAmount}`)
+    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${BASE_TOKEN_ADDRESS}&toTokenAddress=${fromAddress}&amount=${inputAmount}`)
     const data = await result.json()
     console.log('*** getMainnetQuote2', {fromAddress, amount, data})
-
-    setMainnetPrice(data)
     return data
   }
   
@@ -107,18 +103,11 @@ function App({ mainnetClient, mainnetMaticClient }) {
     const routerAddress = '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff'
     const maticAmount = quote.toTokenAmount
     let maticQuotes
-    try{
-      const router = new Contract(routerAddress, abis.router, defaultProvider);
-      console.log('**getMaticQuote1', maticAmount, [fromAddress, maticUSDCAddress])
-      maticQuotes = await router.getAmountsOut(maticAmount, [fromAddress, maticUSDCAddress])
-      console.log('**getMaticQuote1.1', maticQuotes)
-      console.log('**getMaticQuote2', {token0amount:maticQuotes[0].toString(), token1amount:maticQuotes[1].toString()})
-      setMaticPrice(maticQuotes[1])
-    }catch(e){
-      console.log('**getMaticQuote3', e.message)
-      setMessage('Error getting Matic quote')
-      return false
-    }
+    const router = new Contract(routerAddress, abis.router, defaultProvider);
+    console.log('**getMaticQuote1', maticAmount, [fromAddress, maticUSDCAddress])
+    maticQuotes = await router.getAmountsOut(maticAmount, [fromAddress, maticUSDCAddress])
+    console.log('**getMaticQuote1.1', maticQuotes)
+    console.log('**getMaticQuote2', {token0amount:maticQuotes[0].toString(), token1amount:maticQuotes[1].toString()})
     return maticQuotes[1]
   }
 
@@ -188,7 +177,9 @@ function App({ mainnetClient, mainnetMaticClient }) {
       console.log('*** handleSubmitAMount1', {lowerBound, upperBound, skip})
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
         let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
+        setMainnetPrice(mainnetQuote)
         let maticQuote = await getMaticQuote(mainnetQuote)
+        setMaticPrice(maticQuote)
         let newAmount = (maticQuote / Math.pow(10, baseDecimals))
         let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
         let diff = (newAmount - i)
