@@ -18,7 +18,10 @@ const mappingClient = new ApolloClient({
 
 ReactDOM.render(
   <ApolloProvider client={destinationClient} >
-    <App rootClient={rootClient} mappingClient={mappingClient} />
+    <App
+      rootClient={rootClient}
+      mappingClient={mappingClient}
+    />
   </ApolloProvider>,
   document.getElementById("root"),
 );

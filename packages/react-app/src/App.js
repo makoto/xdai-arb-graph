@@ -4,27 +4,15 @@ import { Body, SlideContainer, SpinningImage, Container, Header, SwitchLink, Lin
 import Select from 'react-select';
 import { getMainnetQuote, getMaticQuote, numberWithCommas } from './utils'
 import {
-  GET_HOUR_DATA,
   MATIC_TOKEN_MAPPING,
   MATIC_TOKEN_DATA,
   MAINNET_TOKEN_DATA
 } from "./graphql/subgraph";
 import Chart from "./components/chart"
-import moment from 'moment'
+import Historical from "./components/historical"
 import _ from 'lodash'
 const baseDecimals = 6
 
-function parseData(data, key){
-  return (data && data.tokenDayDatas && data.tokenDayDatas.map(d => {
-    let r = {
-      date: moment(parseInt(d.date) * 1000).format("MMM Do kk:mm:ss")
-    }
-    r[`${key}Volume`] = parseFloat(d.dailyVolumeUSD)
-    r[`${key}Liquidity`] = parseFloat(d.totalLiquidityUSD)
-    r[`${key}Price`] = parseFloat(d.priceUSD)
-    return r
-  })) || []
-}
 
 // RootChain = Ethereum/1inch
 // DestinationChain = Matic/QuickSwap
@@ -74,17 +62,6 @@ function App({ rootClient, mappingClient }) {
     // return {label: t.symbol, value:t.symbol}
   })
 
-  const { loading, error, data  } = useQuery(GET_HOUR_DATA, {
-    variables:{ tokenId: targetToken && targetToken.id },
-    skip: !targetToken
-  });
-
-  const { loading:loading2, error:error2, data:data2  } = useQuery(GET_HOUR_DATA, {
-    client: rootClient,
-    variables:{ tokenId: baseToken },
-    skip: !baseToken
-  });
-
   async function readOnChainData(tokenAddress) {
     const mapping = maticTokenMapping.tokenMappings.filter(m => m.childToken.toLowerCase() === tokenAddress )[0]
     console.log('**readOnChainData1', {tokenAddress, mapping})
@@ -99,35 +76,9 @@ function App({ rootClient, mappingClient }) {
     }
   }
 
-  console.log('***data', {maticTokenData, maticTokenMapping, data, data2})
+  console.log('***data', {baseToken, targetToken, maticTokenData, maticTokenMapping})
   let historyData = [], historyData1, historyData2, num
 
-  if(error){
-    return(JSON.stringify(error))
-  }else{
-    // console.log({data})
-    historyData1 = parseData(data, 'matic')
-    historyData2 = parseData(data2, 'mainnet')
-    // console.log('***data', {targetToken, baseToken, historyData, historyData1, historyData2})
-    if( historyData2 && historyData2.length > 0){
-      for (let index = 0; index < historyData2.length; index++) {
-        const d2 = historyData2[index];
-        const d1 = historyData1[index];
-        let pctDiff
-        if (d1 && d2){
-          const diff = (d1['maticPrice'] - d2['mainnetPrice'])
-          const mid = (d1['maticPrice'] + d2['mainnetPrice']) / 2
-          pctDiff =  diff / mid * 100
-          if(pctDiff > 30) pctDiff = 30
-          if(pctDiff < -30) pctDiff = -30
-        }
-        historyData[index] = {
-          ...d2, ...d1, ...{pctDiff}
-        }
-      }
-    }
-    historyData = historyData.reverse()
-    num = historyData.length  
     const handleTargetTokenChange = (e) => {
       setQuotes([])
       readOnChainData(e.value.id)
@@ -249,28 +200,18 @@ function App({ rootClient, mappingClient }) {
                 )}
               </>
             )}
-            { (message || !historyData || num === 0 || (quotes && quotes.length > 0) ) ? ('') : (
-              <>
-                <h2>Historical Data</h2>
-                <SlideContainer>
-                  <p>
-                    Plotting { num } points btw { historyData[0].date } and { historyData[num - 1].date } 
-                  </p>
-
-                </SlideContainer>
-                <Body>
-                  <Chart data={historyData } xKey={'date'} yKeys={['maticPrice', 'mainnetPrice']} />
-                  <Chart data={historyData } xKey={'date'} yKeys={['pctDiff']} />
-                  <Chart data={historyData } xKey={'date'} brush={true} yKeys={['maticLiquidity', 'maticVolume']} />
-                  <Chart data={historyData } xKey={'date'} yKeys={['mainnetLiquidity', 'mainnetVolume']} />
-                </Body>
-              </>
-            ) }
+            { (targetToken && baseToken ? (
+              <Historical
+                targetTokenId = {targetToken?.id}
+                baseTokenId = {baseToken}
+                rootClient={rootClient}
+              />
+            ) : ('')) }
           </div>
         </Container>
       </>
     );  
-  }
+  
 }
 
 export default App;
