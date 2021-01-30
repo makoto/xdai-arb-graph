@@ -4,18 +4,17 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 import { Body, SlideContainer, SpinningImage, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
-import { addresses, abis } from "@project/contracts";
+import { numberWithCommas } from './utils'
+import { abis } from "@project/contracts";
 import {
   GET_HOUR_DATA,
   MATIC_TOKEN_MAPPING,
   MATIC_TOKEN_DATA,
   MAINNET_TOKEN_DATA
 } from "./graphql/subgraph";
-// import indexEntities from "./data/indexEntities"
-// import indexHistories from "./data/indexHistories"
 import Chart from "./components/chart"
 import moment from 'moment'
-import _, { set } from 'lodash'
+import _ from 'lodash'
 const MATICCHAIN_ENDPOINT = 'https://rpc-mainnet.maticvigil.com/'
 const baseAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
 const baseDecimals = 6
@@ -32,9 +31,6 @@ function parseData(data, key){
   })) || []
 }
 
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
 
 function App({ mainnetClient, mainnetMaticClient }) {
   const [ pending, setPending ] = useState(false);
