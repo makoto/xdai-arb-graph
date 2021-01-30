@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Body, SlideContainer, SpinningImage, Container, Header, SwitchLink, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
-import { getMainnetQuote, getMaticQuote, numberWithCommas } from './utils'
+import {
+  getMainnetQuote,
+  getMaticQuoteToUSDC,
+  getMaticQuoteFromUSDC,
+  numberWithCommas
+} from './utils'
 import {
   MATIC_TOKEN_MAPPING,
   MATIC_TOKEN_DATA,
@@ -102,9 +107,10 @@ function App({ rootClient, mappingClient }) {
       let skip = (upperBound - lowerBound) / 2
       let localQuotes = []
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
-        let mainnetQuote = await getMainnetQuote(baseToken.id, i)
+        const inputAmount = parseInt(amount * Math.pow(10, baseDecimals))
+        let mainnetQuote = await getMainnetQuote(baseToken.id, inputAmount)
         setMainnetPrice(mainnetQuote)
-        let maticQuote = await getMaticQuote(targetToken.id, mainnetQuote.toTokenAmount)
+        let maticQuote = await getMaticQuoteToUSDC(targetToken.id, mainnetQuote.toTokenAmount)
         setMaticPrice(maticQuote)
         let newAmount = (maticQuote / Math.pow(10, baseDecimals))
         let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
