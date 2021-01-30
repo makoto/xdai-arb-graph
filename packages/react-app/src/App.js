@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@apollo/react-hooks";
-import { Body, SlideContainer, SpinningImage, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
+import { Body, SlideContainer, SpinningImage, Container, Header, SwitchLink, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
 import { getMainnetQuote, getMaticQuote, numberWithCommas } from './utils'
 import {
@@ -32,11 +32,12 @@ function App({ mainnetClient, mainnetMaticClient }) {
   const [ maticAddress, setMaticAddress ] = useState();
   const [ message, setMessage ] = useState();
   const [ mainnetAddress, setMainnetAddress ] = useState();
-  const [ amount, setAmount ] = useState();
-  const [ amount2, setAmount2 ] = useState();
+  const [ amount, setAmount ] = useState(1);
+  const [ amount2, setAmount2 ] = useState(100);
   const [ mainnetPrice, setMainnetPrice ] = useState();
   const [ maticPrice, setMaticPrice ] = useState();
   const [ tokenMapping, setTokenMapping ] = useState();
+  const [ reverse, setReverse ] = useState(false);
 
   const [ quotes, setQuotes ] = useState([]);
   console.log({maticAddress, mainnetAddress})
@@ -197,18 +198,19 @@ function App({ mainnetClient, mainnetMaticClient }) {
             )}
             {mainnetAddress && (
               <p>
-                Simulate exchanging between <NumberInput onChange={ handleChangeAmount } placeholder={1}></NumberInput> and 
-                <NumberInput onChange={ handleChangeAmount2 } placeholder={100}></NumberInput> worth of USDC to {maticAddress.symbol}
-                { amount && amount2 ? (
-                  <Button
+                Simulate exchanging 
+                <NumberInput onChange={ handleChangeAmount } value={amount}></NumberInput> ~ 
+                <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput> worth of USDC to {maticAddress.symbol} from
+                { reverse ? (' 🦋Matic to 🔷Ethereum') : (' 🔷Ethereum to 🦋Matic') }
+                  (<Link onClick={
+                    () => {
+                    setReverse(!reverse)
+                    }
+                }>{'Switch direction'}</Link>)
+                <br/>
+                <Button disabled={ !(amount && amount2)}
                     onClick={handleSubmitAmount}
-                  >Get Quote</Button>
-
-                ) : (
-                  <Button disabled={true}
-                    onClick={handleSubmitAmount}
-                  >Get Quote</Button>
-                )}
+                >Get Quote</Button>
               </p>
             )}
             {mainnetPrice && (
