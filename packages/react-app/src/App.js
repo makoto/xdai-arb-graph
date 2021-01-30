@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { Contract } from "@ethersproject/contracts";
-import { JsonRpcProvider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 import { Body, SlideContainer, SpinningImage, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
-import { numberWithCommas } from './utils'
-import { abis } from "@project/contracts";
+import { getMaticQuote, numberWithCommas } from './utils'
 import {
   GET_HOUR_DATA,
   MATIC_TOKEN_MAPPING,
@@ -15,7 +12,6 @@ import {
 import Chart from "./components/chart"
 import moment from 'moment'
 import _ from 'lodash'
-const MATICCHAIN_ENDPOINT = 'https://rpc-mainnet.maticvigil.com/'
 const BASE_TOKEN_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
 const baseDecimals = 6
 
@@ -85,31 +81,15 @@ function App({ mainnetClient, mainnetMaticClient }) {
     skip: !mainnetAddress
   });
 
-  async function getMainnetQuote(fromAddress, amount){
+  async function getMainnetQuote(address, amount){
     const inputAmount = parseInt(amount * Math.pow(10, baseDecimals))
-    console.log('*** getMainnetQuote1', {fromAddress, amount, inputAmount})
-    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${BASE_TOKEN_ADDRESS}&toTokenAddress=${fromAddress}&amount=${inputAmount}`)
+    console.log('*** getMainnetQuote1', {address, amount, inputAmount})
+    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${BASE_TOKEN_ADDRESS}&toTokenAddress=${address}&amount=${inputAmount}`)
     const data = await result.json()
-    console.log('*** getMainnetQuote2', {fromAddress, amount, data})
+    console.log('*** getMainnetQuote2', {address, amount, data})
     return data
   }
   
-  async function getMaticQuote(quotePromise){
-    let quote = await quotePromise
-    console.log('**readOnChainData1', {quote})
-    const defaultProvider = new JsonRpcProvider(MATICCHAIN_ENDPOINT)
-    const maticUSDCAddress = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
-    const fromAddress = maticAddress.id
-    const routerAddress = '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff'
-    const maticAmount = quote.toTokenAmount
-    let maticQuotes
-    const router = new Contract(routerAddress, abis.router, defaultProvider);
-    console.log('**getMaticQuote1', maticAmount, [fromAddress, maticUSDCAddress])
-    maticQuotes = await router.getAmountsOut(maticAmount, [fromAddress, maticUSDCAddress])
-    console.log('**getMaticQuote1.1', maticQuotes)
-    console.log('**getMaticQuote2', {token0amount:maticQuotes[0].toString(), token1amount:maticQuotes[1].toString()})
-    return maticQuotes[1]
-  }
 
   async function readOnChainData(tokenAddress) {
     const mapping = maticTokenMapping.tokenMappings.filter(m => m.childToken.toLowerCase() === tokenAddress )[0]
@@ -169,21 +149,23 @@ function App({ mainnetClient, mainnetMaticClient }) {
     const handleSubmitAmount = async (e) => {
       setPending(true)
       setQuotes([])
-      console.log('*** handleSubmitAMount1', {amount, maticAddress})
+      console.log('*** handleSubmitAmount1', {amount, maticAddress})
       let lowerBound = parseInt(amount)
       let upperBound = parseInt(amount2)
-      let skip = (upperBound - lowerBound) / 5
+      // let skip = (upperBound - lowerBound) / 5
+      let skip = (upperBound - lowerBound) / 2
       let localQuotes = []
-      console.log('*** handleSubmitAMount1', {lowerBound, upperBound, skip})
+      console.log('*** handleSubmitAmount2', {lowerBound, upperBound, skip})
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
         let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
         setMainnetPrice(mainnetQuote)
-        let maticQuote = await getMaticQuote(mainnetQuote)
+        let maticQuote = await getMaticQuote(maticAddress.id, mainnetQuote.toTokenAmount)
         setMaticPrice(maticQuote)
+        console.log('*** handleSubmitAmount3', {mainnetQuote, maticQuote})
         let newAmount = (maticQuote / Math.pow(10, baseDecimals))
         let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
         let diff = (newAmount - i)
-        console.log('****handleSubmitAmount2', {mainnetQuote, i, newAmount, diff, toAmount})
+        console.log('**** handleSubmitAmount4', {mainnetQuote, i, newAmount, diff, toAmount})
         let quote = {
           fromSymbol:mainnetQuote.fromToken.symbol,
           amount:i,
@@ -194,7 +176,7 @@ function App({ mainnetClient, mainnetMaticClient }) {
           newAmount
         }
         localQuotes.push(quote)
-        console.log('****handleSubmitAmount3', {quotes, quote})
+        console.log('**** handleSubmitAmount5', {quotes, quote})
       }
       setQuotes(localQuotes)
       setPending(false)
