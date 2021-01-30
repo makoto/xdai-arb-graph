@@ -26,12 +26,16 @@ function parseData(data, key){
   })) || []
 }
 
-function App({ mainnetClient, mainnetMaticClient }) {
+// RootChain = Ethereum/1inch
+// DestinationChain = Matic/QuickSwap
+// BaseToken = USDC
+// QuoteToken = GTST
+function App({ rootClient, mappingClient }) {
   const [ pending, setPending ] = useState(false);
   const [ selectedOption, setSelectedOption ] = useState();
-  const [ maticAddress, setMaticAddress ] = useState();
+  const [ targetToken, setTargetToken ] = useState();
   const [ message, setMessage ] = useState();
-  const [ mainnetAddress, setMainnetAddress ] = useState();
+  const [ baseToken, setBaseToken ] = useState();
   const [ amount, setAmount ] = useState(1);
   const [ amount2, setAmount2 ] = useState(100);
   const [ mainnetPrice, setMainnetPrice ] = useState();
@@ -40,17 +44,17 @@ function App({ mainnetClient, mainnetMaticClient }) {
   const [ reverse, setReverse ] = useState(false);
 
   const [ quotes, setQuotes ] = useState([]);
-  console.log({maticAddress, mainnetAddress})
+  console.log({targetToken, baseToken})
   const { data: maticTokenData   } = useQuery(MATIC_TOKEN_DATA);
   const { data: maticTokenMapping } = useQuery(MATIC_TOKEN_MAPPING, {
-    client:mainnetMaticClient
+    client:mappingClient
   });
   const { data: mainnetTokenData   } = useQuery(MAINNET_TOKEN_DATA, {
-    client:mainnetClient,
+    client:rootClient,
     variables:{
-      symbol:maticAddress && maticAddress.symbol
+      symbol:targetToken && targetToken.symbol
     },
-    skip: !maticAddress
+    skip: !targetToken
   });
 
   const options = maticTokenData && maticTokenData.tokens && maticTokenData.tokens.map(t => {
@@ -71,14 +75,14 @@ function App({ mainnetClient, mainnetMaticClient }) {
   })
 
   const { loading, error, data  } = useQuery(GET_HOUR_DATA, {
-    variables:{ tokenId: maticAddress && maticAddress.id },
-    skip: !maticAddress
+    variables:{ tokenId: targetToken && targetToken.id },
+    skip: !targetToken
   });
 
   const { loading:loading2, error:error2, data:data2  } = useQuery(GET_HOUR_DATA, {
-    client: mainnetClient,
-    variables:{ tokenId: mainnetAddress },
-    skip: !mainnetAddress
+    client: rootClient,
+    variables:{ tokenId: baseToken },
+    skip: !baseToken
   });
 
   async function readOnChainData(tokenAddress) {
@@ -89,7 +93,7 @@ function App({ mainnetClient, mainnetMaticClient }) {
     if(mapping){
       homeTokenAddress = mapping.rootToken
       setMessage('')
-      setMainnetAddress(homeTokenAddress.toLocaleLowerCase())
+      setBaseToken(homeTokenAddress.toLocaleLowerCase())
     }else{
       setMessage('This token does not exist on Mainnet')
     }
@@ -104,7 +108,7 @@ function App({ mainnetClient, mainnetMaticClient }) {
     // console.log({data})
     historyData1 = parseData(data, 'matic')
     historyData2 = parseData(data2, 'mainnet')
-    // console.log('***data', {maticAddress, mainnetAddress, historyData, historyData1, historyData2})
+    // console.log('***data', {targetToken, baseToken, historyData, historyData1, historyData2})
     if( historyData2 && historyData2.length > 0){
       for (let index = 0; index < historyData2.length; index++) {
         const d2 = historyData2[index];
@@ -124,10 +128,10 @@ function App({ mainnetClient, mainnetMaticClient }) {
     }
     historyData = historyData.reverse()
     num = historyData.length  
-    const handleXDaiChange = (e) => {
+    const handleTargetTokenChange = (e) => {
       setQuotes([])
       readOnChainData(e.value.id)
-      setMaticAddress(e.value)
+      setTargetToken(e.value)
     }
     const handleChangeAmount = (e) => {
       setAmount(e.target.value)
@@ -139,23 +143,19 @@ function App({ mainnetClient, mainnetMaticClient }) {
     const handleSubmitAmount = async (e) => {
       setPending(true)
       setQuotes([])
-      console.log('*** handleSubmitAmount1', {amount, maticAddress})
       let lowerBound = parseInt(amount)
       let upperBound = parseInt(amount2)
       // let skip = (upperBound - lowerBound) / 5
       let skip = (upperBound - lowerBound) / 2
       let localQuotes = []
-      console.log('*** handleSubmitAmount2', {lowerBound, upperBound, skip})
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
-        let mainnetQuote = await getMainnetQuote(mainnetAddress, i)
+        let mainnetQuote = await getMainnetQuote(baseToken, i)
         setMainnetPrice(mainnetQuote)
-        let maticQuote = await getMaticQuote(maticAddress.id, mainnetQuote.toTokenAmount)
+        let maticQuote = await getMaticQuote(targetToken.id, mainnetQuote.toTokenAmount)
         setMaticPrice(maticQuote)
-        console.log('*** handleSubmitAmount3', {mainnetQuote, maticQuote})
         let newAmount = (maticQuote / Math.pow(10, baseDecimals))
         let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
         let diff = (newAmount - i)
-        console.log('**** handleSubmitAmount4', {mainnetQuote, i, newAmount, diff, toAmount})
         let quote = {
           fromSymbol:mainnetQuote.fromToken.symbol,
           amount:i,
@@ -166,14 +166,11 @@ function App({ mainnetClient, mainnetMaticClient }) {
           newAmount
         }
         localQuotes.push(quote)
-        console.log('**** handleSubmitAmount5', {quotes, quote})
       }
       setQuotes(localQuotes)
       setPending(false)
     }
     let routes = mainnetPrice && mainnetPrice.protocols && mainnetPrice.protocols[0].map(p => p[0].name)
-    console.log('****quotes', JSON.stringify(quotes))
-    console.log('***mainnetPrice', {mainnetPrice})
     return (
       <>
         <Header>🦋 Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
@@ -187,20 +184,20 @@ function App({ mainnetClient, mainnetMaticClient }) {
             <Select
               placeholder='Select ERC 20 tokens listed on Quick Swap'
               value={selectedOption}
-              onChange={handleXDaiChange}
+              onChange={handleTargetTokenChange}
               options={options}
             />
-            {maticAddress && (
+            {targetToken && (
               <p>
-              On Matic: {maticAddress && maticAddress.id} 
-              On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : mainnetAddress}
+              On Matic: {targetToken && targetToken.id} 
+              On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : baseToken}
               </p>
             )}
-            {mainnetAddress && (
+            {baseToken && (
               <p>
                 Simulate exchanging 
                 <NumberInput onChange={ handleChangeAmount } value={amount}></NumberInput> ~ 
-                <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput> worth of USDC to {maticAddress.symbol} from
+                <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput> worth of USDC to {targetToken.symbol} from
                 { reverse ? (' 🦋Matic to 🔷Ethereum') : (' 🔷Ethereum to 🦋Matic') }
                   (<Link onClick={
                     () => {
@@ -247,7 +244,7 @@ function App({ mainnetClient, mainnetMaticClient }) {
                     <h2>Arb steps</h2>
                     <h3>1.<Link href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from USDC to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
                     <h3>2.<Link href={`https://omni.maticchain.com`}>Transfer { mainnetPrice.toToken.symbol } to Matic on Omnichain</Link>  </h3>
-                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${maticAddress && maticAddress.id}`}>Exhange from { mainnetPrice.toToken.symbol } to Matic on HoneySwap</Link> </h3>
+                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${targetToken && targetToken.id}`}>Exhange from { mainnetPrice.toToken.symbol } to Matic on HoneySwap</Link> </h3>
                   </>
                 )}
               </>
