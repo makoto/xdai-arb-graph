@@ -7,6 +7,9 @@ export function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+export async function getTokenMapping(address){
+
+}
 
 export async function getMaticQuote(address, amount){
     console.log('**readOnChainData1', {amount})

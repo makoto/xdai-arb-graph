@@ -70,7 +70,9 @@ function App({ rootClient, mappingClient }) {
     if(mapping){
       homeTokenAddress = mapping.rootToken
       setMessage('')
-      setBaseToken(homeTokenAddress.toLocaleLowerCase())
+      setBaseToken({
+        id: homeTokenAddress.toLocaleLowerCase()
+      })
     }else{
       setMessage('This token does not exist on Mainnet')
     }
@@ -79,7 +81,7 @@ function App({ rootClient, mappingClient }) {
   console.log('***data', {baseToken, targetToken, maticTokenData, maticTokenMapping})
   let historyData = [], historyData1, historyData2, num
 
-    const handleTargetTokenChange = (e) => {
+    const handleTargetTokenChange = async (e) => {
       setQuotes([])
       readOnChainData(e.value.id)
       setTargetToken(e.value)
@@ -100,7 +102,7 @@ function App({ rootClient, mappingClient }) {
       let skip = (upperBound - lowerBound) / 2
       let localQuotes = []
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
-        let mainnetQuote = await getMainnetQuote(baseToken, i)
+        let mainnetQuote = await getMainnetQuote(baseToken.id, i)
         setMainnetPrice(mainnetQuote)
         let maticQuote = await getMaticQuote(targetToken.id, mainnetQuote.toTokenAmount)
         setMaticPrice(maticQuote)
@@ -139,10 +141,14 @@ function App({ rootClient, mappingClient }) {
               options={options}
             />
             {targetToken && (
-              <p>
-              On Matic: {targetToken && targetToken.id} 
-              On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : baseToken}
-              </p>
+              <ul>
+                <li>
+                  On Matic: {targetToken && targetToken.id}
+                </li>
+                <li>
+                  On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : baseToken.id}
+                </li>
+              </ul>
             )}
             {baseToken && (
               <p>
@@ -203,7 +209,7 @@ function App({ rootClient, mappingClient }) {
             { (targetToken && baseToken ? (
               <Historical
                 targetTokenId = {targetToken?.id}
-                baseTokenId = {baseToken}
+                baseTokenId = {baseToken?.id}
                 rootClient={rootClient}
               />
             ) : ('')) }
