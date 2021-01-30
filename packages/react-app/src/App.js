@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Body, SlideContainer, SpinningImage, Container, Header, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
-import { getMaticQuote, numberWithCommas } from './utils'
+import { getMainnetQuote, getMaticQuote, numberWithCommas } from './utils'
 import {
   GET_HOUR_DATA,
   MATIC_TOKEN_MAPPING,
@@ -12,7 +12,6 @@ import {
 import Chart from "./components/chart"
 import moment from 'moment'
 import _ from 'lodash'
-const BASE_TOKEN_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
 const baseDecimals = 6
 
 function parseData(data, key){
@@ -80,16 +79,6 @@ function App({ mainnetClient, mainnetMaticClient }) {
     variables:{ tokenId: mainnetAddress },
     skip: !mainnetAddress
   });
-
-  async function getMainnetQuote(address, amount){
-    const inputAmount = parseInt(amount * Math.pow(10, baseDecimals))
-    console.log('*** getMainnetQuote1', {address, amount, inputAmount})
-    const result = await fetch(`https://api.1inch.exchange/v2.0/quote?fromTokenAddress=${BASE_TOKEN_ADDRESS}&toTokenAddress=${address}&amount=${inputAmount}`)
-    const data = await result.json()
-    console.log('*** getMainnetQuote2', {address, amount, data})
-    return data
-  }
-  
 
   async function readOnChainData(tokenAddress) {
     const mapping = maticTokenMapping.tokenMappings.filter(m => m.childToken.toLowerCase() === tokenAddress )[0]
