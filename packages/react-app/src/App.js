@@ -3,7 +3,9 @@ import { useQuery } from "@apollo/react-hooks";
 import { Body, SlideContainer, SpinningImage, Container, Header, SwitchLink, Link, Button, Red, Green, NumberInput } from "./components";
 import Select from 'react-select';
 import {
-  getMainnetQuote,
+  BASE_TOKEN,
+  getMainnetQuoteToUSDC,
+  getMainnetQuoteFromUSDC,
   getMaticQuoteToUSDC,
   getMaticQuoteFromUSDC,
   numberWithCommas
@@ -22,7 +24,7 @@ const baseDecimals = 6
 // RootChain = Ethereum/1inch
 // DestinationChain = Matic/QuickSwap
 // BaseToken = USDC
-// QuoteToken = GTST
+// TargetToken = GTST
 function App({ rootClient, mappingClient }) {
   const [ pending, setPending ] = useState(false);
   const [ selectedOption, setSelectedOption ] = useState();
@@ -49,6 +51,14 @@ function App({ rootClient, mappingClient }) {
     },
     skip: !targetToken
   });
+  let baseChain, targetChain
+  if(reverse){
+    baseChain = 'Matic'
+    targetChain = 'Ethereum'
+  }else{
+    baseChain = 'Ethereum'
+    targetChain = 'Matic'
+  }
 
   const options = maticTokenData && maticTokenData.tokens && maticTokenData.tokens.map(t => {
     return {
@@ -105,22 +115,30 @@ function App({ rootClient, mappingClient }) {
       let upperBound = parseInt(amount2)
       // let skip = (upperBound - lowerBound) / 5
       let skip = (upperBound - lowerBound) / 2
-      let localQuotes = []
+      let targetQuote, baseQuote, targetQuoteSymbol, baseQuoteSymbol, localQuotes = []
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
-        const inputAmount = parseInt(amount * Math.pow(10, baseDecimals))
-        let mainnetQuote = await getMainnetQuote(baseToken.id, inputAmount)
-        setMainnetPrice(mainnetQuote)
-        let maticQuote = await getMaticQuoteToUSDC(targetToken.id, mainnetQuote.toTokenAmount)
-        setMaticPrice(maticQuote)
-        let newAmount = (maticQuote / Math.pow(10, baseDecimals))
-        let toAmount = mainnetQuote.toTokenAmount / Math.pow(10,mainnetQuote.toToken.decimals)
+        let inputAmount = parseInt(i * Math.pow(10, BASE_TOKEN.decimals))
+
+        if(reverse){
+          targetQuote = await getMaticQuoteFromUSDC(targetToken.id, inputAmount)
+          baseQuote = await getMainnetQuoteToUSDC(baseToken.id, targetQuote.toTokenAmount)
+        }else{
+          targetQuote = await getMainnetQuoteFromUSDC(baseToken.id, inputAmount)
+          baseQuote = await getMaticQuoteToUSDC(targetToken.id, targetQuote.toTokenAmount)
+        }
+        setMainnetPrice(targetQuote)
+        setMaticPrice(baseQuote)  
+        console.log('***targetQuoteResult', {inputAmount, targetQuote, toTokenAmount:targetQuote.toTokenAmount, baseQuote})
+
+        let newAmount = (baseQuote.toTokenAmount / Math.pow(10, baseDecimals))
+        let toAmount = targetQuote.toTokenAmount / Math.pow(10, targetToken.decimals)
         let diff = (newAmount - i)
         let quote = {
-          fromSymbol:mainnetQuote.fromToken.symbol,
+          fromSymbol:'USDC',
           amount:i,
           toAmount,
-          toSymbol:mainnetQuote.toToken.symbol,
-          inverseAmount:parseFloat(mainnetQuote.fromTokenAmount) / parseInt(mainnetQuote.toTokenAmount) / Math.pow(10, (mainnetQuote.fromToken.decimals - mainnetQuote.toToken.decimals)),
+          toSymbol:targetToken.symbol,
+          inverseAmount:parseFloat(targetQuote.fromTokenAmount) / parseInt(targetQuote.toTokenAmount) / Math.pow(10, (BASE_TOKEN.decimals - targetToken.decimals)),
           diff,
           newAmount
         }
@@ -129,7 +147,7 @@ function App({ rootClient, mappingClient }) {
       setQuotes(localQuotes)
       setPending(false)
     }
-    let routes = mainnetPrice && mainnetPrice.protocols && mainnetPrice.protocols[0].map(p => p[0].name)
+    console.log('***mainnetPrice', {mainnetPrice})
     return (
       <>
         <Header>🦋 Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
@@ -183,9 +201,7 @@ function App({ rootClient, mappingClient }) {
                       <>Got some error.</>
                     ) : (
                       <>
-                      Getting quote for {
-                      (mainnetPrice.fromTokenAmount / Math.pow(10, parseInt(mainnetPrice.fromToken.decimals))).toFixed(3)
-                      } {mainnetPrice.fromToken.symbol}
+                      Getting quote
                       </>
                     )}
                   </span>
@@ -197,17 +213,13 @@ function App({ rootClient, mappingClient }) {
                       {quotes.map(q => (
                         <li>
                           {parseFloat(q.amount).toFixed(3)} {q.fromSymbol} is {parseFloat(q.toAmount).toFixed(3)} (1 {q.toSymbol} is {parseFloat(q.inverseAmount).toFixed(5)} {q.fromSymbol})
-                           on Mainnet is {parseFloat(q.newAmount).toFixed(5)} {q.fromSymbol} on Matic (diff is {
+                           on {baseChain} is {parseFloat(q.newAmount).toFixed(5)} {q.fromSymbol} on {targetChain} (diff is {
                              q.diff > 0 ? (<Green>{parseFloat(q.diff).toFixed(5)}</Green>) : (<Red>{parseFloat(q.diff).toFixed(5)}</Red>)
                            })
                         </li>
                       ))}
                     </ul>
                     <Chart data={quotes } xKey={'amount'} yKeys={['diff']} />
-                    <h2>Arb steps</h2>
-                    <h3>1.<Link href={`https://1inch.exchange/#/DAI/${mainnetPrice.toToken.address}`}>Exchange from USDC to { mainnetPrice.toToken.symbol } on 1inch ({routes.join(' => ')})</Link> </h3>
-                    <h3>2.<Link href={`https://omni.maticchain.com`}>Transfer { mainnetPrice.toToken.symbol } to Matic on Omnichain</Link>  </h3>
-                    <h3>3.<Link href={`https://honeyswap.org/#/swap?inputCurrency=${targetToken && targetToken.id}`}>Exhange from { mainnetPrice.toToken.symbol } to Matic on HoneySwap</Link> </h3>
                   </>
                 )}
               </>

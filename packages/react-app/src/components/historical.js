@@ -20,7 +20,6 @@ function parseData(data, key){
 }
 
 export default function Historical({targetTokenId, baseTokenId, rootClient}) {
-  console.log('***Historical', {targetTokenId, baseTokenId})
   const { loading, error, data  } = useQuery(GET_HOUR_DATA, {
     // client: destinationClient,
     variables:{ tokenId: targetTokenId },
@@ -56,6 +55,8 @@ export default function Historical({targetTokenId, baseTokenId, rootClient}) {
         ...d2, ...d1, ...{pctDiff}
       }
     }
+  }else{
+    return('loading')
   }
   historyData = historyData.reverse()
   num = historyData.length  
