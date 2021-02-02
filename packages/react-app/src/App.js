@@ -61,7 +61,7 @@ function App({ rootClient, mappingClient }) {
     targetChain = 'Matic'
   }
 
-  const options = maticTokenData && maticTokenData.tokens && maticTokenData.tokens.map(t => {
+  const options = maticTokenData && maticTokenData.tokens && maticTokenData.tokens.filter(t => t.symbol !== BASE_TOKEN.symbols).map(t => {
     return {
       label: `${t.symbol} (trade volume: USD ${numberWithCommas(parseInt(t.tradeVolumeUSD))})`,
       value:t
@@ -178,7 +178,7 @@ function App({ rootClient, mappingClient }) {
                   On Matic: {targetToken && targetToken.id}
                 </li>
                 <li>
-                  On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : baseToken.id}
+                  On Mainnet: {message ? (<span style={{color: "red"}}>{message}</span>) : (baseToken && baseToken.id)}
                 </li>
               </ul>
             )}

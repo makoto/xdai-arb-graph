@@ -57,9 +57,10 @@ export async function getATokenAddress(address){
   const contract = new Contract(aTokenRootChainManagerAddress, abis.aTokenRootChainManager, defaultProvider);
   // const rootToChildToken = await contract.rootToChildToken(ausdcAddress)
   const childToRootToken = await contract.childToRootToken(mausdcAddress)
-  return childToRootToken
-  // console.log('***getATokenAddress1', {rootToChildToken, childToRootToken})
   // const getATokenValue = await contract.getATokenValue(ausdcAddress, 1)
   // const getMATokenValue = await contract.getMATokenValue(mausdcAddress, 1)
   // console.log('***getATokenAddress2', {getATokenValue, getMATokenValue})  
+
+  return childToRootToken
+  // console.log('***getATokenAddress1', {rootToChildToken, childToRootToken})
 }
