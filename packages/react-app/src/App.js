@@ -8,7 +8,8 @@ import {
   getMainnetQuoteFromUSDC,
   getMaticQuoteToUSDC,
   getMaticQuoteFromUSDC,
-  numberWithCommas
+  numberWithCommas,
+  getATokenAddress
 } from './utils'
 import {
   MATIC_TOKEN_MAPPING,
@@ -84,6 +85,14 @@ function App({ rootClient, mappingClient }) {
 
     if(mapping){
       homeTokenAddress = mapping.rootToken
+    }else{
+      try{
+        homeTokenAddress = await getATokenAddress(tokenAddress)
+      }catch(e){
+        console.log('***e', e)
+      }
+    }
+    if(homeTokenAddress){
       setMessage('')
       setBaseToken({
         id: homeTokenAddress.toLocaleLowerCase()
@@ -92,7 +101,6 @@ function App({ rootClient, mappingClient }) {
       setMessage('This token does not exist on Mainnet')
     }
   }
-
   console.log('***data', {baseToken, targetToken, maticTokenData, maticTokenMapping})
   let historyData = [], historyData1, historyData2, num
 

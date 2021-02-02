@@ -4,6 +4,7 @@ import { abis } from "@project/contracts";
 import { from } from "apollo-boost";
 const MATIC_USDC_ADDRESS = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
 const MATICCHAIN_ENDPOINT = 'https://rpc-mainnet.maticvigil.com/'
+const ETHEREUM_ENDPOINT = ''
 export const BASE_TOKEN = {
   address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
   symbols:'USDC',
@@ -46,4 +47,19 @@ export async function getMainnetQuoteFromUSDC(address, amount){
 
 export async function getMainnetQuoteToUSDC(address, amount){
   return await getMainnetQuote(address, BASE_TOKEN.address, amount)
+}
+
+export async function getATokenAddress(address){
+  const defaultProvider = new JsonRpcProvider(ETHEREUM_ENDPOINT)
+  const aTokenRootChainManagerAddress = '0x0D29aDA4c818A9f089107201eaCc6300e56E0d5c'
+  const ausdcAddress = '0xBcca60bB61934080951369a648Fb03DF4F96263C'
+  const mausdcAddress = '0x9719d867a500ef117cc201206b8ab51e794d3f82'
+  const contract = new Contract(aTokenRootChainManagerAddress, abis.aTokenRootChainManager, defaultProvider);
+  // const rootToChildToken = await contract.rootToChildToken(ausdcAddress)
+  const childToRootToken = await contract.childToRootToken(mausdcAddress)
+  return childToRootToken
+  // console.log('***getATokenAddress1', {rootToChildToken, childToRootToken})
+  // const getATokenValue = await contract.getATokenValue(ausdcAddress, 1)
+  // const getMATokenValue = await contract.getMATokenValue(mausdcAddress, 1)
+  // console.log('***getATokenAddress2', {getATokenValue, getMATokenValue})  
 }
