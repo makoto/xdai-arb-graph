@@ -39,10 +39,16 @@ export default function Historical({targetTokenId, baseTokenId, rootClient}) {
   historyData1 = parseData(data, 'matic')
   historyData2 = parseData(data2, 'mainnet')
   console.log('***history', {historyData, historyData1, historyData2})
-  if( historyData2 && historyData2.length > 0){
-    for (let index = 0; index < historyData2.length; index++) {
-      const d2 = historyData2[index];
-      const d1 = historyData1[index];
+  if( historyData1?.length > 0 || historyData2?.length > 0){
+    let totalLength
+    if(historyData2?.length > historyData1?.length ){
+      totalLength = historyData2?.length
+    }else{
+      totalLength = historyData1?.length
+    }
+    for (let index = 0; index < totalLength; index++) {
+      const d2 = historyData2[index] || {};
+      const d1 = historyData1[index] || {};
       let pctDiff
       if (d1 && d2){
         const diff = (d1['maticPrice'] - d2['mainnetPrice'])
@@ -59,7 +65,8 @@ export default function Historical({targetTokenId, baseTokenId, rootClient}) {
     return(<p>Historical chart not found</p>)
   }
   historyData = historyData.reverse()
-  num = historyData.length  
+  num = historyData.length
+  console.log('***his', {historyData, num})
   return(
     <>
       <h2>Historical Data</h2>
