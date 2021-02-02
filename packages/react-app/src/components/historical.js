@@ -32,7 +32,7 @@ export default function Historical({targetTokenId, baseTokenId, rootClient}) {
     skip: !baseTokenId
   });
   if(loading || loading2){
-    return 'loading'
+    return <p>Loading...</p>
   }
 
   let historyData = [], historyData1, historyData2, num
@@ -56,7 +56,7 @@ export default function Historical({targetTokenId, baseTokenId, rootClient}) {
       }
     }
   }else{
-    return('loading')
+    return(<p>Historical chart not found</p>)
   }
   historyData = historyData.reverse()
   num = historyData.length  

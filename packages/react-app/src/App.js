@@ -37,6 +37,7 @@ function App({ rootClient, mappingClient }) {
   const [ mainnetPrice, setMainnetPrice ] = useState();
   const [ maticPrice, setMaticPrice ] = useState();
   const [ tokenMapping, setTokenMapping ] = useState();
+  const [ skipInterval, setSkipInterval ] = useState(2);
   const [ reverse, setReverse ] = useState(false);
 
   const [ quotes, setQuotes ] = useState([]);
@@ -116,13 +117,18 @@ function App({ rootClient, mappingClient }) {
       setAmount2(e.target.value)
     }
 
+    const handleSkipInterval = (e) => {
+      setSkipInterval(e.target.value)
+    }
+
+
     const handleSubmitAmount = async (e) => {
       setPending(true)
       setQuotes([])
       let lowerBound = parseInt(amount)
       let upperBound = parseInt(amount2)
       // let skip = (upperBound - lowerBound) / 5
-      let skip = (upperBound - lowerBound) / 2
+      let skip = (upperBound - lowerBound) / skipInterval
       let targetQuote, baseQuote, targetQuoteSymbol, baseQuoteSymbol, localQuotes = []
       for (let i = lowerBound; i <= upperBound; i=i+skip) {
         let inputAmount = parseInt(i * Math.pow(10, BASE_TOKEN.decimals))
@@ -131,6 +137,7 @@ function App({ rootClient, mappingClient }) {
           targetQuote = await getMaticQuoteFromUSDC(targetToken.id, inputAmount)
           baseQuote = await getMainnetQuoteToUSDC(baseToken.id, targetQuote.toTokenAmount)
         }else{
+          console.log('***getMainnetQuoteFromUSDC', baseToken.id, inputAmount)
           targetQuote = await getMainnetQuoteFromUSDC(baseToken.id, inputAmount)
           baseQuote = await getMaticQuoteToUSDC(targetToken.id, targetQuote.toTokenAmount)
         }
@@ -184,16 +191,21 @@ function App({ rootClient, mappingClient }) {
             )}
             {baseToken && (
               <p>
-                Simulate exchanging 
-                <NumberInput onChange={ handleChangeAmount } value={amount}></NumberInput> ~ 
-                <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput> worth of USDC to {targetToken.symbol} from
-                { reverse ? (' 🦋Matic to 🔷Ethereum') : (' 🔷Ethereum to 🦋Matic') }
-                  (<Link onClick={
+                Simulate arbitraging of
+                { reverse ? (' Matic 🦋 ') : (' Ethereum 🔷 ') }
+                USDC -> {targetToken.symbol} ->
+                { reverse ? (' Ethereum 🔷 ') : (' Matic 🦋 ') }
+                USDC
+                (<Link onClick={
                     () => {
                     setReverse(!reverse)
                     }
                 }>{'Switch direction'}</Link>)
+
                 <br/>
+                USDC values between <NumberInput onChange={ handleChangeAmount } value={amount}></NumberInput> ~
+                <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput>(with <NumberInput onChange={ handleSkipInterval } value={skipInterval}></NumberInput> intervals)
+
                 <Button disabled={ !(amount && amount2)}
                     onClick={handleSubmitAmount}
                 >Get Quote</Button>
