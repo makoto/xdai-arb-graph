@@ -168,15 +168,14 @@ function App({ rootClient, mappingClient }) {
         <Header>🦋 Crosschain Arbitrage 🦅 opportunity graph 📈 </Header>
         <Container>
           <p>
-            This site allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and <Link href="https://www.maticchain.com/">Matic side chain</Link>.
-            <br/>
-            The below contains the list ERC20 coins on <Link href="https://quickswap.exchange/">QuickSwap</Link>, which is a Uniswap clone on Matic chain.
+            This site allows you to observe the historical price margins of ERC20 tokens between Ethereum Mainnet and <Link href="https://www.maticchain.com/">Matic side chain</Link> as well as simulate the range of exchange amount to maximize the profit.
           </p>
           <div>
             <Select
-              placeholder='Select ERC 20 tokens listed on Quick Swap'
+              placeholder='Select ERC 20 tokens listed on QuickSwap'
               value={selectedOption}
               onChange={handleTargetTokenChange}
+              noOptionsMessage={() => 'Failed to load the options. Please refresh the page again'}
               options={options}
             />
             {targetToken && (
@@ -190,6 +189,7 @@ function App({ rootClient, mappingClient }) {
               </ul>
             )}
             {baseToken && (
+              <>
               <p>
                 Simulate arbitraging of
                 { reverse ? (' Matic 🦋 ') : (' Ethereum 🔷 ') }
@@ -201,8 +201,8 @@ function App({ rootClient, mappingClient }) {
                     setReverse(!reverse)
                     }
                 }>{'Switch direction'}</Link>)
-
-                <br/>
+              </p>
+              <p>
                 USDC values between <NumberInput onChange={ handleChangeAmount } value={amount}></NumberInput> ~
                 <NumberInput onChange={ handleChangeAmount2 } value={amount2}></NumberInput>(with <NumberInput onChange={ handleSkipInterval } value={skipInterval}></NumberInput> intervals)
 
@@ -210,6 +210,7 @@ function App({ rootClient, mappingClient }) {
                     onClick={handleSubmitAmount}
                 >Get Quote</Button>
               </p>
+              </>
             )}
             {mainnetPrice && (
               <>
